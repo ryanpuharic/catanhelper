@@ -15,15 +15,24 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from threading import Lock
 from flask_migrate import Migrate, upgrade
+from pathlib import Path
 
+# Get the parent directory of the backend folder
+BASE_DIR = Path(__file__).parent.parent
 
-processing_lock = Lock() 
-
-app = Flask(__name__, static_folder=os.path.join(os.getcwd(), 'client', 'build'), template_folder=os.path.join(os.getcwd(), 'client', 'build'))
+#flask frontend link
+app = Flask(
+    __name__,
+    static_folder=BASE_DIR / 'client' / 'build',
+    template_folder=BASE_DIR / 'client' / 'build'
+)
 CORS(app, resources={r"/*": {"origins": "*"}}) 
 
+#db link
 db = SQLAlchemy()
 migrate = Migrate()
+
+processing_lock = Lock() 
 
 board_path = 'training/TestBoard.png'
 tree_path = 'training/TreeNew.png'
@@ -731,11 +740,11 @@ else:
 
     @app.route('/')
     def serve():
-        return send_from_directory(app.static_folder, 'index.html')
+        return send_file(os.path.join(app.template_folder, 'index.html'))
 
     @app.errorhandler(404)
     def not_found(e):
-        return send_from_directory(app.static_folder, 'index.html')
+        return send_file(os.path.join(app.template_folder, 'index.html'))
 
     #make new board
     @app.route('/generate_board', methods=['POST'])
