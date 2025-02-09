@@ -19,6 +19,8 @@ from pathlib import Path
 
 # Get the parent directory of the backend folder
 BASE_DIR = Path(__file__).parent
+static_dir = BASE_DIR / 'static'
+static_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
 # Flask app setup
 app = Flask(
@@ -683,7 +685,8 @@ def BoardImage(new_tiles, output_path):
 
 # Remove old generated images from the static directory
 def cleanup_old_images():
-    static_dir = BASE_DIR / 'static'  # This ensures the function works relative to the 'static' folder inside the backend directory
+    static_dir = BASE_DIR / 'static'
+    static_dir.mkdir(exist_ok=True, mode=0o777)  # Allow read/write
     for file_path in static_dir.glob('generated_*.png'):
         try:
             os.remove(file_path)
@@ -700,7 +703,7 @@ if MODE == 'cv':
         BoardViewer()
         processed_tiles = [tile[2:] for tile in tiles]
         upload_id = uuid.uuid4().hex  # Generate unique ID
-        output_path = f"static/generated_{upload_id}.png"
+        output_path = os.path.join(BASE_DIR, 'static', f'generated_{upload_id}.png')
         BoardImage(processed_tiles, output_path)
 
 
@@ -773,7 +776,7 @@ else:
 
             # unique output path
             upload_id = uuid.uuid4().hex
-            output_path = BASE_DIR / 'static' / f'generated_{upload_id}.png'  # Corrected path
+            output_path = os.path.join(BASE_DIR, 'static', f'generated_{upload_id}.png')
 
             # Generate the board
             new_tiles = generate_fair_board(highbool, lowbool, distbool)
@@ -803,7 +806,7 @@ else:
 
         upload_id = uuid.uuid4().hex
         temp_path = f'training/temp_{upload_id}.png'
-        output_path = f'static/generated_{upload_id}.png'
+        output_path = os.path.join(BASE_DIR, 'static', f'generated_{upload_id}.png')
         error = None
 
         try:
