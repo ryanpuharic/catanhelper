@@ -22,11 +22,6 @@ processing_lock = Lock()
 app = Flask(__name__, static_folder=os.path.join(os.getcwd(), 'client', 'build'), template_folder=os.path.join(os.getcwd(), 'client', 'build'))
 CORS(app, resources={r"/*": {"origins": "*"}}) 
 
-# Serving the React app's index.html
-@app.route('/')
-def serve():
-    return send_from_directory(app.static_folder, 'index.html')
-
 db = SQLAlchemy()
 migrate = Migrate()
 
