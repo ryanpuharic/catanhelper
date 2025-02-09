@@ -790,7 +790,15 @@ else:
         except Exception as e:
             traceback.print_exc()
             return jsonify({'error': f'Board generation failed: {str(e)}'}), 500
+    
+    @app.route('/debug/static')
+    def debug_static():
+        static_dir = os.path.join(os.getcwd(), 'static')
+        if not os.path.exists(static_dir):
+            return jsonify({"error": "static directory does not exist"}), 404
 
+        files = os.listdir(static_dir)
+        return jsonify({"files": files}), 200
 
     @app.route('/upload_board', methods=['POST'])
     def upload_board():
