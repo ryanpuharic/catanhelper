@@ -9,26 +9,39 @@ const BoardGenerator: React.FC<BoardGeneratorProps> = ({ setImagePath, setIsLoad
   const handleGenerateBoard = async () => {
     try {
       setIsLoading(true);
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : process.env.REACT_APP_API_BASE_URL;
-      const response = await fetch('/generate_board', {
+      
+      // Use environment variables consistently
+      const apiUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:5000' 
+        : process.env.REACT_APP_API_BASE_URL;
+  
+      const response = await fetch(`${apiUrl}/generate_board`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-
+  
       if (!response.ok) {
-        throw new Error('Failed to generate board');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate board');
       }
-
+  
       const data = await response.json();
-      setImagePath(`${baseUrl}/${data.image_path}?t=${Date.now()}`);
+      
+      // Use the full URL from backend response + cache busting
+      if (data.image_url) {
+        setImagePath(`${data.image_url}?t=${Date.now()}`);
+      } else {
+        throw new Error('No image URL in response');
+      }
     } catch (error) {
       console.error('Failed to generate the board:', error);
+      alert(error instanceof Error ? error.message : 'Unknown error occurred');
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   return (
     <div className="group">
