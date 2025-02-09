@@ -781,7 +781,7 @@ else:
 
             # Ensure image was created successfully
             if os.path.exists(output_path):
-                return jsonify({'image_path': f'/static/generated_{upload_id}.png'}), 200
+                return jsonify({'image_url': f'/static/generated_{upload_id}.png'}), 200
             else:
                 raise ValueError("Image was not successfully created")
         except Exception as e:
