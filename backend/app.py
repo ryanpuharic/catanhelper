@@ -18,17 +18,18 @@ from flask_migrate import Migrate, upgrade
 from pathlib import Path
 
 # Get the parent directory of the backend folder
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).parent
 
-#flask frontend link
+# Flask app setup
 app = Flask(
     __name__,
-    static_folder=BASE_DIR / 'client' / 'build',
-    template_folder=BASE_DIR / 'client' / 'build'
+    static_folder=BASE_DIR / 'static',  
+    template_folder=BASE_DIR / 'client' / 'build' 
 )
-CORS(app, resources={r"/*": {"origins": "*"}}) 
 
-#db link
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Database link
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -682,7 +683,8 @@ def BoardImage(new_tiles, output_path):
 
 # Remove old generated images from the static directory
 def cleanup_old_images():
-    for file_path in glob.glob('static/generated_*.png'):
+    static_dir = BASE_DIR / 'static'  # This ensures the function works relative to the 'static' folder inside the backend directory
+    for file_path in static_dir.glob('generated_*.png'):
         try:
             os.remove(file_path)
         except OSError as e:
@@ -771,7 +773,7 @@ else:
 
             # unique output path
             upload_id = uuid.uuid4().hex
-            output_path = f'static/generated_{upload_id}.png'
+            output_path = BASE_DIR / 'static' / f'generated_{upload_id}.png'  # Corrected path
 
             # Generate the board
             new_tiles = generate_fair_board(highbool, lowbool, distbool)
@@ -785,7 +787,6 @@ else:
         except Exception as e:
             traceback.print_exc()
             return jsonify({'error': f'Board generation failed: {str(e)}'}), 500
-
 
 
     @app.route('/upload_board', methods=['POST'])
