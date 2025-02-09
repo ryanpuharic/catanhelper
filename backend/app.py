@@ -14,13 +14,16 @@ from flask import Flask, jsonify, request, render_template, send_file, current_a
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from threading import Lock
+from flask_migrate import Migrate, upgrade
+
 
 processing_lock = Lock() 
 
-from flask_cors import CORS
-
 app = Flask(__name__, static_folder='static', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "*"}}) 
+
+db = SQLAlchemy()
+migrate = Migrate()
 
 board_path = 'training/TestBoard.png'
 tree_path = 'training/TreeNew.png'
@@ -700,17 +703,18 @@ else:
 
     if ENV == 'dev':
         app.debug = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DEV_DATABASE_URI')  # No hardcoded fallback
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DEV_DATABASE_URI') 
     else:
         app.debug = False
-        db_url = os.getenv('DATABASE_URL', 'sqlite:///default.db')  # Default for local dev
+        db_url = os.getenv('DATABASE_URL', 'sqlite:///default.db') 
         if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://")  # Fix Render URL
+            db_url = db_url.replace("postgres://", "postgresql://")  
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    db = SQLAlchemy(app)
+    db.init_app(app)  
+    migrate.init_app(app, db) 
 
     class BoxClicked(db.Model):
         __tablename__ = 'answers'
@@ -845,6 +849,7 @@ else:
         with app.app_context():
             db.create_all()  
 
+            upgrade()
 
             # Create a new row in the 'answers' table with default values
             new_row = BoxClicked(highbool=False, lowbool=False, distbool=False)
