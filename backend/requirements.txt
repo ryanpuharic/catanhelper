@@ -7,3 +7,5 @@ opencv_python==4.9.0.80
 opencv_python_headless==4.9.0.80
 Pillow==11.1.0
 gunicorn==21.2.0
+psycopg2-binary
+
