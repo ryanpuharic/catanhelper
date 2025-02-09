@@ -740,34 +740,44 @@ else:
     #make new board
     @app.route('/generate_board', methods=['POST'])
     def generate_board():
-        cleanup_old_images() 
+        try:
+            cleanup_old_images()
 
-        # Fetch values from the database
-        box_clicked = BoxClicked.query.first()
+            # Fetch values from the database
+            box_clicked = BoxClicked.query.first()
 
-        if box_clicked is None:
-            # Create a new row with default values
-            box_clicked = BoxClicked(highbool=False, lowbool=False, distbool=False)
-            db.session.add(box_clicked)
-            db.session.commit()
-        
-        highbool = box_clicked.highbool
-        lowbool = box_clicked.lowbool
-        distbool = box_clicked.distbool
+            if box_clicked is None:
+                # Create a new row with default values
+                box_clicked = BoxClicked(highbool=False, lowbool=False, distbool=False)
+                db.session.add(box_clicked)
+                db.session.commit()
 
-        # Clears the spots
-        global gui_spots
-        gui_spots = []
+            highbool = box_clicked.highbool
+            lowbool = box_clicked.lowbool
+            distbool = box_clicked.distbool
 
-        # unique output path
-        upload_id = uuid.uuid4().hex
-        output_path = f'static/generated_{upload_id}.png'
+            # Clears the spots
+            global gui_spots
+            gui_spots = []
 
-        # Generate the board
-        new_tiles = generate_fair_board(highbool, lowbool, distbool)
-        BoardImage(new_tiles, output_path)  # Add output_path parameter
+            # unique output path
+            upload_id = uuid.uuid4().hex
+            output_path = f'static/generated_{upload_id}.png'
 
-        return jsonify({'image_path': output_path})
+            # Generate the board
+            new_tiles = generate_fair_board(highbool, lowbool, distbool)
+            BoardImage(new_tiles, output_path)
+
+            # Ensure image was created successfully
+            if os.path.exists(output_path):
+                return jsonify({'image_path': output_path}), 200
+            else:
+                raise ValueError("Image was not successfully created")
+        except Exception as e:
+            traceback.print_exc()
+            return jsonify({'error': f'Board generation failed: {str(e)}'}), 500
+
+
 
     @app.route('/upload_board', methods=['POST'])
     def upload_board():
