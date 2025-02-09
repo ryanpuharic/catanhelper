@@ -715,7 +715,7 @@ else:
         app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DEV_DATABASE_URI') 
     else:
         app.debug = False
-        db_url = os.getenv('DATABASE_URL', 'sqlite:///default.db') 
+        db_url = os.getenv('DATABASE_URL') 
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://")  
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url

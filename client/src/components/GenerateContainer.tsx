@@ -14,7 +14,7 @@ const GenerateContainer: React.FC = () => {
 
   const baseUrl = process.env.NODE_ENV === 'development' 
   ? 'http://localhost:5000' 
-  : process.env.REACT_APP_API_BASE_URL;
+  : 'https://catanhelper-backend.onrender.com';
 
   const updateCheckbox = (name: string, value: boolean) => {
     fetch(`${baseUrl}/update_checkbox?name=${name}&value=${value}`, { method: 'GET' });

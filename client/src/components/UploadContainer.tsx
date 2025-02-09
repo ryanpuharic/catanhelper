@@ -19,7 +19,7 @@ const UploadContainer = () => {
     try {
       const baseUrl = process.env.NODE_ENV === 'development' 
         ? 'http://localhost:5000' 
-        : process.env.REACT_APP_API_BASE_URL;
+        : 'https://catanhelper-backend.onrender.com';
       
       const response = await fetch(`${baseUrl}/upload_board`, {
         method: 'POST',
