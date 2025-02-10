@@ -34,7 +34,7 @@ const BoardGenerator: React.FC<BoardGeneratorProps> = ({ setImagePath, setIsLoad
 
       const data = await response.json();
       if (data.image_url) {
-        setImagePath(`${data.image_url}?t=${Date.now()}`); // Cache busting for fresh images
+        setImagePath(data.image_url);
       } else {
         throw new Error('No image URL in response');
       }

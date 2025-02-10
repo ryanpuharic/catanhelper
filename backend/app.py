@@ -22,11 +22,7 @@ BASE_DIR = Path(__file__).parent
 static_dir = BASE_DIR / 'static'
 static_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
-app = Flask(
-    __name__,
-    static_folder=str(static_dir),  
-    template_folder=str(BASE_DIR / 'client' / 'build') 
-)
+app = Flask(__name__, static_folder="static")
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -748,6 +744,11 @@ else:
     @app.errorhandler(404)
     def not_found(e):
         return send_file(os.path.join(app.template_folder, 'index.html'))
+    
+    @app.route("/static/<path:filename>")
+    def serve_static(filename):
+        return send_from_directory(app.static_folder, filename)
+
 
     #make new board
     @app.route('/generate_board', methods=['POST'])
@@ -779,7 +780,9 @@ else:
             BoardImage(new_tiles, str(output_path))
 
             if output_path.exists():
-                return jsonify({'image_url': f'/static/generated_{upload_id}.png'}), 200
+                return jsonify({
+                    'image_url': f'{request.host_url}static/generated_{upload_id}.png'
+                }), 200
             else:
                 raise ValueError("Image was not successfully created")
 
