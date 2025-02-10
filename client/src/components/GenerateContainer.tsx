@@ -10,24 +10,37 @@ const checkboxesConfig = [
 ];
 
 const GenerateContainer: React.FC = () => {
-  const [sliderValue, setSliderValue] = useState<number>(2); // Default value for the slider
+  const [sliderValue, setSliderValue] = useState<number>(2);
 
   const baseUrl = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5000' 
-  : 'https://catanhelper-backend.onrender.com';
+    ? 'http://localhost:5000' 
+    : 'https://catanhelper-backend.onrender.com';
 
-  const updateCheckbox = (name: string, value: boolean) => {
-    fetch(`${baseUrl}/update_checkbox?name=${name}&value=${value}`, { method: 'GET' });
+  // Utility to handle API requests
+  const makeApiRequest = async (endpoint: string, queryParams: Record<string, string | number | boolean>) => {
+    const query = new URLSearchParams(queryParams as Record<string, string>).toString();
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}?${query}`, { method: 'GET' });
+      if (!response.ok) {
+        console.error(`API request to ${endpoint} failed.`);
+      }
+    } catch (error) {
+      console.error('Failed to make API request:', error);
+    }
+  };
+
+  const handleCheckboxChange = (name: string, value: boolean) => {
+    makeApiRequest('/update_checkbox', { name, value });
   };
 
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
     setSliderValue(value);
-    fetch(`${baseUrl}/update_slider?name=priority&value=${value}`, { method: 'GET' });
+    makeApiRequest('/update_slider', { name: 'priority', value });
   };
 
   return (
-    <div className = "controls">
+    <div className="controls">
       <div className="gen-section">
         <h2>Generation Settings</h2>
         <form>
@@ -36,10 +49,12 @@ const GenerateContainer: React.FC = () => {
               <label htmlFor={checkbox.id}>{checkbox.label}</label>
               <input
                 type="checkbox"
-                className = "checkbox"
+                className="checkbox"
                 id={checkbox.id}
                 name={checkbox.name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => updateCheckbox(checkbox.name, e.target.checked)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleCheckboxChange(checkbox.name, e.target.checked)
+                }
               />
             </div>
           ))}
@@ -71,7 +86,9 @@ const GenerateContainer: React.FC = () => {
               type="checkbox"
               id="includePortsCheckbox"
               name="includePorts"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => updateCheckbox('includePorts', e.target.checked)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleCheckboxChange('includePorts', e.target.checked)
+              }
             />
           </div>
         </form>

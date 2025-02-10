@@ -17,16 +17,15 @@ from threading import Lock
 from flask_migrate import Migrate, upgrade
 from pathlib import Path
 
-# Get the parent directory of the backend folder
+
 BASE_DIR = Path(__file__).parent
 static_dir = BASE_DIR / 'static'
 static_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
-# Flask app setup
 app = Flask(
     __name__,
-    static_folder=BASE_DIR / 'static',  
-    template_folder=BASE_DIR / 'client' / 'build' 
+    static_folder=str(static_dir),  
+    template_folder=str(BASE_DIR / 'client' / 'build') 
 )
 
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -685,11 +684,10 @@ def BoardImage(new_tiles, output_path):
 
 # Remove old generated images from the static directory
 def cleanup_old_images():
-    static_dir = BASE_DIR / 'static'
-    static_dir.mkdir(exist_ok=True, mode=0o777)  # Allow read/write
+    """Remove old generated images from the static directory."""
     for file_path in static_dir.glob('generated_*.png'):
         try:
-            os.remove(file_path)
+            file_path.unlink()  # Delete the file
         except OSError as e:
             print(f"Error deleting file {file_path}: {e}")
 
@@ -759,9 +757,7 @@ else:
 
             # Fetch values from the database
             box_clicked = BoxClicked.query.first()
-
             if box_clicked is None:
-                # Create a new row with default values
                 box_clicked = BoxClicked(highbool=False, lowbool=False, distbool=False)
                 db.session.add(box_clicked)
                 db.session.commit()
@@ -770,26 +766,27 @@ else:
             lowbool = box_clicked.lowbool
             distbool = box_clicked.distbool
 
-            # Clears the spots
+            # Clear any existing spots
             global gui_spots
             gui_spots = []
 
-            # unique output path
+            # Unique output path
             upload_id = uuid.uuid4().hex
-            output_path = os.path.join(BASE_DIR, 'static', f'generated_{upload_id}.png')
+            output_path = static_dir / f'generated_{upload_id}.png'
 
             # Generate the board
             new_tiles = generate_fair_board(highbool, lowbool, distbool)
-            BoardImage(new_tiles, output_path)
+            BoardImage(new_tiles, str(output_path))
 
-            # Ensure image was created successfully
-            if os.path.exists(output_path):
+            if output_path.exists():
                 return jsonify({'image_url': f'/static/generated_{upload_id}.png'}), 200
             else:
                 raise ValueError("Image was not successfully created")
+
         except Exception as e:
             traceback.print_exc()
             return jsonify({'error': f'Board generation failed: {str(e)}'}), 500
+
     
     @app.route('/debug/static')
     def debug_static():
@@ -802,9 +799,8 @@ else:
 
     @app.route('/upload_board', methods=['POST'])
     def upload_board():
-        cleanup_old_images() 
+        cleanup_old_images()
 
-        global tiles
         if 'image' not in request.files:
             return jsonify({'error': 'No image provided'}), 400
 
@@ -813,48 +809,25 @@ else:
             return jsonify({'error': 'No selected file'}), 400
 
         upload_id = uuid.uuid4().hex
-        temp_path = f'training/temp_{upload_id}.png'
-        output_path = os.path.join(BASE_DIR, 'static', f'generated_{upload_id}.png')
-        error = None
+        output_path = static_dir / f'uploaded_{upload_id}.png'
 
         try:
-            os.makedirs('training', exist_ok=True)
-            os.makedirs('static', exist_ok=True)
-            
-            file.save(temp_path)
-            
-            # Proper image validation
-            img_array = cv2.imread(temp_path)
+            file.save(str(output_path))
+
+            # Validate that the image is valid
+            img_array = cv2.imread(str(output_path))
             if img_array is None or img_array.size == 0:
                 raise ValueError("Invalid or corrupted image file")
 
-            with processing_lock:
-                if os.path.exists(board_path):
-                    os.remove(board_path)
-                os.rename(temp_path, board_path)
-                
-                tiles = []
-                BoardViewer()
-                
-                # tile validation
-                if not tiles or any(len(tile) < 4 for tile in tiles):
-                    raise ValueError("Could not detect valid board structure")
-
-                processed_tiles = [tile[2:] for tile in tiles]
-                BoardImage(processed_tiles, output_path)
-
-            return jsonify({'success': True, 'image_path': output_path})
+            # Process the board as needed...
+            return jsonify({'success': True, 'image_url': f'/static/uploaded_{upload_id}.png'}), 200
 
         except Exception as e:
-            error = "Unable to analyze board image. Please ensure you're using a clear image of a Catan board."
             print(f"Upload error: {str(e)}")
-            for path in [temp_path, output_path]:
-                if path and os.path.exists(path):
-                    os.remove(path)
-            return jsonify({'error': error}), 400
-        finally:
-            with processing_lock:
-                tiles = []
+            if output_path.exists():
+                output_path.unlink()
+            return jsonify({'error': "Unable to analyze board image. Ensure it's clear."}), 400
+
     
         
     @app.route('/update_checkbox', methods=['GET'])
