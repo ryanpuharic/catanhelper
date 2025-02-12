@@ -24,7 +24,7 @@ static_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
 app = Flask(__name__, static_folder="static")
 
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "https://catanhelper.vercel.app/"}})
 
 # Database link
 db = SQLAlchemy()
@@ -736,14 +736,6 @@ else:
             self.lowbool = lowbool
             self.distbool = distbool
 
-
-    @app.route('/')
-    def serve():
-        return send_file(os.path.join(app.template_folder, 'index.html'))
-
-    @app.errorhandler(404)
-    def not_found(e):
-        return send_file(os.path.join(app.template_folder, 'index.html'))
     
     @app.route("/static/<path:filename>")
     def serve_static(filename):
