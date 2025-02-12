@@ -35,8 +35,8 @@ const GenerateContainer: React.FC = () => {
 
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
-    setSliderValue(value);
-    makeApiRequest('/update_slider', { name: 'priority', value });
+    // setSliderValue(value);
+    //makeApiRequest('/update_slider', { name: 'priority', value });
   };
 
   return (
