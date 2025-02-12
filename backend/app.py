@@ -24,7 +24,7 @@ static_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
 app = Flask(__name__, static_folder="static")
 
-CORS(app)
+CORS(app, origins=["https://catanhelper.vercel.app"])
 
 # Database link
 db = SQLAlchemy()
@@ -847,6 +847,11 @@ else:
 
         db.session.commit()
         return jsonify({'success': True})
+
+    @app.route('/update_checkbox', methods=['GET'])
+    def update_slider():
+        value = request.args.get('value') == 'true'
+        return value
     
     if __name__ == '__main__':
         # Create the database tables before running the app
