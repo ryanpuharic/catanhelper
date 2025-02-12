@@ -848,7 +848,7 @@ else:
         db.session.commit()
         return jsonify({'success': True})
 
-    @app.route('/update_checkbox', methods=['GET'])
+    @app.route('/update_slider', methods=['GET'])
     def update_slider():
         value = request.args.get('value') == 'true'
         return value
