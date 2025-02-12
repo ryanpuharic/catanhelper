@@ -24,7 +24,7 @@ static_dir.mkdir(exist_ok=True)  # Create the directory if it doesn't exist
 
 app = Flask(__name__, static_folder="static")
 
-CORS(app, resources={r"/*": {"origins": "https://catanhelper.vercel.app/"}})
+CORS(app)
 
 # Database link
 db = SQLAlchemy()
@@ -737,6 +737,11 @@ else:
             self.distbool = distbool
 
     
+    @app.route('/')
+    def home():
+        return {"message": "Backend is working!"}
+
+    
     @app.route("/static/<path:filename>")
     def serve_static(filename):
         return send_from_directory(app.static_folder, filename)
@@ -856,5 +861,6 @@ else:
             db.session.commit()
 
         # Run the Flask application
-        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+        port = int(os.environ.get("PORT", 10000))
+        app.run(host="0.0.0.0", port=port)
 
