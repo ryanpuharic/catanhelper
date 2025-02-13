@@ -2,7 +2,6 @@ import cv2
 import numpy as np 
 from array import *
 from operator import itemgetter
-import matplotlib.pyplot as plt
 import math
 import random
 import os
@@ -16,6 +15,7 @@ from flask_cors import CORS
 from threading import Lock
 from flask_migrate import Migrate, upgrade
 from pathlib import Path
+#import matplotlib.pyplot as plt
 
 
 BASE_DIR = Path(__file__).parent
@@ -415,9 +415,9 @@ def BoardViewer():
 
     colors =['green', 'darkorange', 'lightgreen', 'yellow', 'gray']
 
-    plt.pie(rarity_percentage, labels=labels, colors=colors, startangle=90, autopct='%1.1f%%')
+    #plt.pie(rarity_percentage, labels=labels, colors=colors, startangle=90, autopct='%1.1f%%')
 
-    plt.axis('equal')
+    #plt.axis('equal')
 
     #plt.show()
 '''
@@ -819,7 +819,9 @@ else:
             if img_array is None or img_array.size == 0:
                 raise ValueError("Invalid or corrupted image file")
 
-            # Process the board as needed...
+            BoardViewer()  # Process the uploaded image
+            processed_tiles = [tile[2:] for tile in tiles] 
+            BoardImage(processed_tiles, output_path) 
             return jsonify({'success': True, 'image_url': f'/static/uploaded_{upload_id}.png'}), 200
 
         except Exception as e:
