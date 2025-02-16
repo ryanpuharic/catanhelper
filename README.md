@@ -6,6 +6,4 @@ Users can upload images of their own boards or use board generation settings to 
 
 Placement spots are ranked from Red (least optimal) to Green (most optimal)
 
-Web Version: https://t.ly/msBEN
-
 by Ryan Puharic and Michael Sikaras
