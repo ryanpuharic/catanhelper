@@ -36,9 +36,9 @@ const ButtonContainer = () => {
           <>
             <div className = "gen-tools">
               <GenerateContainer />
+              <ResultContainer imagePath={imagePath} isLoading={isLoading} />
               <BoardGenerator setImagePath={setImagePath} setIsLoading={setIsLoading} />
             </div>
-            <ResultContainer imagePath={imagePath} isLoading={isLoading} />
           </>
         )}
 
