@@ -305,6 +305,10 @@ form {
 }
 
 @media (max-width: 768px) {
+  .header-image {
+    width: 100%;
+  }
+
   .board-button {
     font-size: 1.5rem; 
     padding: 15px 30px;
